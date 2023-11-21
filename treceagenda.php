@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Trece Agenda
  * Plugin URI: https://13node.com/informatica/wordpress/trece-agenda/
- * Description: Un plugin para gestionar citas internas en WordPress.
+ * Description: A simple agenda plugin for manage internal events.
  * Version: 1.0
  * Author: 13Node.com
  * Author URI: https://13node.com
@@ -48,7 +48,7 @@ function trece_agenda_script_init() {
 add_action('admin_enqueue_scripts','trece_agenda_script_init');
 add_action( 'admin_head', function () { ?>
 <style>
-        /* Modal Styles */
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -85,9 +85,7 @@ add_action( 'admin_head', function () { ?>
 function trece_agenda_events() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'trece_agenda';
-
-    $events = $wpdb->get_results("SELECT * FROM $table_name");
-
+    $events = $wpdb->prepare("SELECT * FROM $table_name");
     return rest_ensure_response($events);
 }
 function trece_agenda_api_endpoint() {
@@ -132,42 +130,38 @@ function trece_agenda_save($fecha_hora, $profesional, $servicio, $detalles) {
 }
 function trece_agenda_delete($item_id) {
     global $wpdb;
-
-    // Define the table name with the proper WordPress prefix
     $table_name = $wpdb->prefix . 'trece_agenda';
-
-    // Define the DELETE query
     $delete_query = $wpdb->prepare("DELETE FROM $table_name WHERE id = %d", $item_id);
-
-    // Execute the DELETE query
     $wpdb->query($delete_query);
-
-    // Check if the deletion was successful
     if ($wpdb->rows_affected > 0) {
-        return true; // Deletion successful
+        return true;
     } else {
-        return false; // Deletion failed
+        return false;
     }
 }
 
-
 function trece_agenda_admin() {
+    $trecenode_credit = plugin_dir_url(__FILE__) . 'images/trecenode.png';
     if (isset($_POST['submit_cita'])) {
-        $fecha_hora = sanitize_text_field($_POST['fecha_hora']);
-        $profesional = sanitize_text_field($_POST['profesional']);
-        $servicio = sanitize_text_field($_POST['servicio']);
-        $detalles = sanitize_textarea_field($_POST['detalles']);
+        if (isset($_POST['trece_agenda_add_nonce']) && wp_verify_nonce($_POST['trece_agenda_add_nonce_field'], 'trece_agenda_add_nonce')) {
+            $fecha_hora = sanitize_text_field($_POST['fecha_hora']);
+            $profesional = sanitize_text_field($_POST['profesional']);
+            $servicio = sanitize_text_field($_POST['servicio']);
+            $detalles = sanitize_textarea_field($_POST['detalles']);
 
-        $result = trece_agenda_save($fecha_hora, $profesional, $servicio, $detalles);
+            $result = trece_agenda_save($fecha_hora, $profesional, $servicio, $detalles);
 
-        if ($result) {
-            echo '<div class="updated"><p>Cita guardada con éxito.</p></div>';
+            if ($result) {
+                echo '<div class="updated"><p>Cita guardada con éxito.</p></div>';
+            } else {
+                echo '<div class="error"><p>Error al guardar la cita.</p></div>';
+            }
         } else {
-            echo '<div class="error"><p>Error al guardar la cita.</p></div>';
+            echo '<div class="error"><p>Error de seguridad. Por favor, inténtalo de nuevo.</p></div>';
         }
     }
     if (isset($_POST['delete_item'])) {
-        $item_id_to_delete = $_POST['trece-event-id'];
+        $item_id_to_delete = sanitize_text_field($_POST['trece-event-id']);
     
         $deleted = trece_agenda_delete($item_id_to_delete);
     
@@ -182,6 +176,7 @@ function trece_agenda_admin() {
     <div class="wrap">
         <h2>Agendar Cita</h2>
         <form method="post" action="">
+            <?php wp_nonce_field('trece_agenda_add_nonce', 'trece_agenda_add_nonce_field'); ?>
             <label for="fecha_hora">Fecha y Hora:</label><br>
             <input type="datetime-local" id="fecha_hora" name="fecha_hora" required><br><br>
 
@@ -210,6 +205,6 @@ function trece_agenda_admin() {
 
         </div>
     </div>
-    <p><img src="<?php echo plugin_dir_url( __DIR__ ).'trece-agenda/images/logo.png'; ?>" height="10"> Este plugin ha sido desarrollado por <a href="https://13node.com">13Node.com</a>.</p>
+    <p><img src="<?php echo esc_url($trecenode_credit); ?>" height="10"> Este plugin ha sido desarrollado por <a href="https://13node.com">13Node.com</a>.</p>
 <?php
 }

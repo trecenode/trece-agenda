@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', function() {
           color: 'yellow', 
           textColor: 'black',
           success: function(response) {
+            calendar.removeAllEventSources();
             var events = [];
 
-            // Iterate through the JSON data and format it as FullCalendar events
             response.forEach(function(item) {
                 events.push({
                     id: item.id,
@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-            // Add the formatted events to the calendar
             calendar.addEventSource(events);
           }
         }]
