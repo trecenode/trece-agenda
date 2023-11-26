@@ -6,6 +6,8 @@
  * Version: 1.0
  * Author: 13Node.com
  * Author URI: https://13node.com
+ * License: GPL-2.0+
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -41,47 +43,12 @@ function trece_agenda_init() {
 }
 register_activation_hook(__FILE__, 'trece_agenda_init');
 
-function trece_agenda_script_init() {
-    wp_enqueue_script( 'trece-agenda', plugin_dir_url( __FILE__ ) . 'js/admin.js', array(), '1.0' );
-    wp_enqueue_script('fullcalendar', plugin_dir_url( __FILE__ ) . 'js/fullcalendar.js', array('jquery'), '5.5.0', true);
+function trece_agenda_admin_script_init() {
+    wp_enqueue_style( 'trece-agenda', plugin_dir_url( __FILE__ ) . 'assets/css/main.css', array(), '1.0' );
+    wp_enqueue_script( 'trece-agenda', plugin_dir_url( __FILE__ ) . 'assets/js/admin.js', array(), '1.0' );
+    wp_enqueue_script('fullcalendar', plugin_dir_url( __FILE__ ) . 'assets/js/fullcalendar.js', array('jquery'), '5.5.0', true);
 }
-add_action('admin_enqueue_scripts','trece_agenda_script_init');
-add_action( 'admin_head', function () { ?>
-<style>
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.modal-content {
-    background-color: #fff;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 60%;
-}
-
-.trece-close {
-    color: #aaaaaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.trece-close:hover {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
-}
-</style>
-<?php } );
+add_action('admin_enqueue_scripts','trece_agenda_admin_script_init');
 function trece_agenda_events() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'trece_agenda';
@@ -141,7 +108,7 @@ function trece_agenda_delete($item_id) {
 }
 
 function trece_agenda_admin() {
-    $trecenode_credit = plugin_dir_url(__FILE__) . 'images/trecenode.png';
+    $trecenode_credit = plugin_dir_url(__FILE__) . 'assets/images/trecenode.png';
     if (isset($_POST['submit_cita'])) {
         if (isset($_POST['trece_agenda_add_nonce']) && wp_verify_nonce($_POST['trece_agenda_add_nonce_field'], 'trece_agenda_add_nonce')) {
             $fecha_hora = sanitize_text_field($_POST['fecha_hora']);
